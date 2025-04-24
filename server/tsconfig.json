@@ -1,0 +1,6 @@
+{
+  "compilerOptions": {
+    "typeRoots": ["node_modules/@types", "src"], // add the path to your types
+    "types": ["node", "express"] // ensure 'express' is recognized
+  }
+}
