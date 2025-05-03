@@ -25,7 +25,10 @@ router.post('/', upload.array('images', 2), verifyToken, async (req, res) => {
     return res.status(400).json({ message: 'Exactly 2 images are required' });
   }
 
-  const { name, description, size, price } = req.body;
+  const { name, description, size, price, type } = req.body;
+  if (!['T-Shirts', 'Hoodies', 'Sweatshirts', 'Jackets'].includes(type)) {
+    return res.status(400).json({ message: 'Invalid product type' });
+  }
 
   // Validate size input
   const validSizes = ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
@@ -46,6 +49,7 @@ router.post('/', upload.array('images', 2), verifyToken, async (req, res) => {
       description,
       size,
       price,
+      type,
     });
     await product.save();
     res.status(201).json(product);
@@ -55,10 +59,14 @@ router.post('/', upload.array('images', 2), verifyToken, async (req, res) => {
   }
 });
 
-// 🟢 GET all products
+// 🟢 GET all products (with optional type filter)
 router.get('/', async (req, res) => {
   try {
-    const products = await Product.find();
+    const { type } = req.query;
+
+    const filter = type ? { type } : {}; // 👈 filter by type if present
+    const products = await Product.find(filter);
+
     res.json(products);
   } catch (err) {
     console.error('Error fetching products:', err);

@@ -1,8 +1,7 @@
-// LandingPage.tsx
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import API from '../api';
-import Footer from '../components/Footer';
+import API from '../../api';
+import Footer from '../../components/Footer';
 
 interface Product {
   _id: string;
@@ -10,27 +9,26 @@ interface Product {
   price: number;
   slug: string;
   images: string[];
+  type: string;
 }
 
-const LandingPage: React.FC = () => {
+const HoodiesPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [showAll, setShowAll] = useState(false); // ✅ New state to toggle full view
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
-    API.get('/products')
+    API.get('/products?type=Hoodies')
       .then((res) => setProducts(res.data))
       .catch((err) => console.error(err));
   }, []);
 
-  // ✅ Limit to 8 if not showing all
   const displayedProducts = showAll ? products : products.slice(0, 8);
 
   return (
     <div className="w-full">
-      {/* Products Grid */}
       <section className="max-w-screen-xl mx-auto px-4 py-16">
         <h2 className="text-3xl font-bold text-center mb-12">
-          Limited Stocks — Exclusive Designs
+          Hoodies Collection
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
@@ -60,7 +58,6 @@ const LandingPage: React.FC = () => {
           ))}
         </div>
 
-        {/* ✅ "See More" Button */}
         {!showAll && products.length > 8 && (
           <div className="text-center mt-10">
             <button
@@ -77,4 +74,4 @@ const LandingPage: React.FC = () => {
   );
 };
 
-export default LandingPage;
+export default HoodiesPage;

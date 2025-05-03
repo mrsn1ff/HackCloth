@@ -1,7 +1,7 @@
 // src/pages/AdminDashboard.tsx
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import API from '../api';
+import API from '../../api';
 
 const AdminDashboard: React.FC = () => {
   const [productImage, setProductImage] = useState<File | null>(null);
@@ -12,6 +12,7 @@ const AdminDashboard: React.FC = () => {
   const [price, setPrice] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [type, setType] = useState('');
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -37,6 +38,7 @@ const AdminDashboard: React.FC = () => {
     formData.append('price', price);
     formData.append('images', productImage);
     formData.append('images', hoverImage);
+    formData.append('type', type);
 
     try {
       await API.post('/products', formData);
@@ -157,6 +159,25 @@ const AdminDashboard: React.FC = () => {
             required
             className="w-full"
           />
+        </div>
+
+        <div className="col-span-1">
+          <label className="block mb-1 font-medium text-gray-700">
+            Product Type
+          </label>
+          <select
+            className="w-full border px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            required
+          >
+            <option value="">Select Type</option>
+            {['T-Shirts', 'Hoodies', 'Sweatshirts', 'Jackets'].map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="col-span-full">

@@ -4,29 +4,34 @@ const mongoose = require('mongoose');
 const productSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true
+    required: true,
   },
-  slug: { 
+  slug: {
     type: String,
-    unique: true 
+    unique: true,
   },
   images: {
-    type: [String],  // array of 2 image URLs
-    validate: [arrayLimit, '{PATH} must have exactly 2 images']
+    type: [String], // array of 2 image URLs
+    validate: [arrayLimit, '{PATH} must have exactly 2 images'],
   },
   description: {
     type: String,
-    required: true
+    required: true,
   },
   size: {
     type: String,
     enum: ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'],
-    required: true
+    required: true,
   },
   price: {
     type: Number,
-    required: true
-  }
+    required: true,
+  },
+  type: {
+    type: String,
+    enum: ['T-Shirts', 'Hoodies', 'Sweatshirts', 'Jackets'],
+    required: true,
+  },
 });
 
 function arrayLimit(val) {

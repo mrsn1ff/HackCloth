@@ -6,6 +6,7 @@ const fs = require('fs'); // Add this to handle directory creation
 const connectDB = require('./config/db');
 const adminRoutes = require('./routes/adminRoute');
 const productRoutes = require('./routes/productRoutes'); // Import your product routes
+const userRoutes = require('./routes/userRoute');
 
 const app = express();
 connectDB();
@@ -27,6 +28,7 @@ app.use('/uploads', express.static(uploadDir));
 // Register product routes
 app.use('/api/products', productRoutes); // Link your product routes to '/api/products'
 app.use('/api/admin', adminRoutes);
+app.use('/api/users', userRoutes);
 
 // Connect to MongoDB (ensure your MongoDB connection string is correct)
 

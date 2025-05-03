@@ -1,6 +1,6 @@
 import React, { useState, useEffect, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import API from '../api';
+import API from '../../api';
 
 const AdminLoginPage: React.FC = () => {
   const [username, setUsername] = useState<string>(''); // ✅ Typed

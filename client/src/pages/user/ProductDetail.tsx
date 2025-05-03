@@ -1,9 +1,9 @@
 // ✅ Added type update for slug usage
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom'; // ✅ Added Link
-import API from '../api';
-import Footer from '../components/Footer';
-import { useCart } from '../pages/CartContext'; // ✅ Updated path to CartContext
+import API from '../../api';
+import Footer from '../../components/Footer';
+import { useCart } from '../admin/CartContext'; // ✅ Updated path to CartContext
 
 interface Product {
   _id: string;
