@@ -1,6 +1,5 @@
-// ✅ Added type update for slug usage
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom'; // ✅ Added Link
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import API from '../../api';
 import Footer from '../../components/Footer';
 import { useCart } from '../admin/CartContext';
@@ -14,15 +13,15 @@ interface Product {
   images: string[];
   otherImages?: string[];
   size: string[];
-  slug: string; // ✅ Needed to route to other product
+  slug: string;
 }
 
 const ProductDetail: React.FC = () => {
   const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();
-  const { addToCart } = useCart(); // ✅ Hook from CartContext
+  const { addToCart } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
-  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]); // ✅ New state
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [selectedImage, setSelectedImage] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('');
@@ -44,7 +43,7 @@ const ProductDetail: React.FC = () => {
       try {
         const res = await API.get('/products');
         const filtered = res.data.filter((p: Product) => p.slug !== slug);
-        setRelatedProducts(filtered.slice(0, 4)); // ✅ Just pick top 4
+        setRelatedProducts(filtered.slice(0, 4));
       } catch (err) {
         console.error('Error fetching related products:', err);
       }
@@ -52,27 +51,24 @@ const ProductDetail: React.FC = () => {
 
     fetchProduct();
     fetchRelated();
-  }, [slug]); // ✅ Re-fetch when slug changes
+  }, [slug]);
 
   if (!product)
     return <div className="text-center text-lg mt-10">Loading...</div>;
 
   return (
     <div>
-      <div className="max-w-6xl mx-auto p-5 flex flex-col gap-12 mt-10">
-        {/* ✅ Main Product Detail Layout */}
-        <div className="flex flex-wrap gap-8">
-          {/* Images */}
-          <div className="flex-1 min-w-[450px]">
-            {/* Main selected image */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+        {/* Product Layout */}
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Left: Images */}
+          <div className="w-full lg:w-1/2">
             <img
               src={selectedImage}
               alt="Main Product"
               className="w-full h-auto object-cover rounded-lg mb-4"
             />
-
-            {/* Thumbnail image selector */}
-            <div className="flex gap-3 flex-wrap">
+            <div className="flex flex-wrap gap-3">
               {[...(product.images || []), ...(product.otherImages || [])].map(
                 (img, index) => (
                   <img
@@ -80,32 +76,35 @@ const ProductDetail: React.FC = () => {
                     src={img}
                     alt={`Product ${index}`}
                     onClick={() => setSelectedImage(img)}
-                    className={`w-20 h-20 object-cover rounded border-2 cursor-pointer transition
-            ${
-              selectedImage === img
-                ? 'border-black'
-                : 'border-transparent hover:border-black'
-            }`}
+                    className={`w-20 h-20 object-cover rounded border-2 cursor-pointer transition ${
+                      selectedImage === img
+                        ? 'border-black'
+                        : 'border-transparent hover:border-black'
+                    }`}
                   />
                 ),
               )}
             </div>
           </div>
 
-          {/* Info */}
-          <div className="flex-1 min-w-[450px]">
-            <h1 className="text-3xl font-semibold mb-2">{product.name}</h1>
-            <p className="text-2xl font-medium mb-3">
-              ₹ {product.price.toFixed(2)}
-            </p>
-            <p className="text-gray-600 mb-6 text-sm">
-              Tax included. Shipping calculated at checkout.
-            </p>
+          {/* Right: Info */}
+          <div className="w-full lg:w-1/2 space-y-6">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-semibold mb-2">
+                {product.name}
+              </h1>
+              <p className="text-xl sm:text-2xl font-medium text-gray-800">
+                ₹ {product.price.toFixed(2)}
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                Tax included. Shipping calculated at checkout.
+              </p>
+            </div>
 
             {/* Options */}
-            <div className="space-y-5">
+            <div className="space-y-4">
               <div>
-                <label className="block font-medium mb-1">Color:</label>
+                <label className="block text-sm font-medium mb-1">Color:</label>
                 <select
                   className="w-full border border-gray-300 p-2 rounded"
                   value={selectedColor}
@@ -119,7 +118,7 @@ const ProductDetail: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-medium mb-1">Size:</label>
+                <label className="block text-sm font-medium mb-1">Size:</label>
                 <select
                   className="w-full border border-gray-300 p-2 rounded"
                   value={selectedSize}
@@ -134,14 +133,10 @@ const ProductDetail: React.FC = () => {
                 </select>
               </div>
 
-              {/* Description */}
-              <div className="prose prose-sm sm:prose lg:prose-lg max-w-none mt-8 text-gray-700">
-                <ReactMarkdown>{product.description}</ReactMarkdown>
-              </div>
-
-              {/* Quantity */}
               <div>
-                <label className="block font-medium mb-2">Quantity:</label>
+                <label className="block text-sm font-medium mb-1">
+                  Quantity:
+                </label>
                 <div className="flex items-center gap-3">
                   <button
                     className="px-3 py-1 border border-gray-500 rounded"
@@ -158,47 +153,51 @@ const ProductDetail: React.FC = () => {
                   </button>
                 </div>
               </div>
+            </div>
 
-              {/* Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 mt-4">
-                <button
-                  onClick={() => {
-                    if (!selectedSize || !selectedColor) {
-                      alert('Please select size and color');
-                      return;
-                    }
+            {/* Description */}
+            <div className="prose prose-sm sm:prose-base lg:prose-lg max-w-none mt-6 text-gray-700">
+              <ReactMarkdown>{product.description}</ReactMarkdown>
+            </div>
 
-                    // Add item to cart and navigate to Cart page
-                    addToCart({
-                      _id: product._id,
-                      name: product.name,
-                      price: product.price,
-                      image: product.images[0], // Add product image
-                      quantity,
-                      size: selectedSize,
-                      color: selectedColor,
-                    });
+            {/* Actions */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <button
+                onClick={() => {
+                  if (!selectedSize || !selectedColor) {
+                    alert('Please select size and color');
+                    return;
+                  }
 
-                    // Redirect to Cart page
-                    navigate('/cart');
-                  }}
-                  className="bg-black text-white px-5 py-2 rounded"
-                >
-                  Add to Cart
-                </button>
+                  addToCart({
+                    _id: product._id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.images[0],
+                    quantity,
+                    size: selectedSize,
+                    color: selectedColor,
+                  });
 
-                <button className="bg-red-600 text-white px-5 py-2 rounded">
-                  Buy it Now
-                </button>
-              </div>
+                  navigate('/cart');
+                }}
+                className="bg-black text-white px-5 py-2 rounded"
+              >
+                Add to Cart
+              </button>
+              <button className="bg-red-600 text-white px-5 py-2 rounded">
+                Buy it Now
+              </button>
             </div>
           </div>
         </div>
 
-        {/* ✅ Related Products Section */}
+        {/* Related Products */}
         <div>
-          <h2 className="text-3xl mt-9 font-semibold mb-6">Related Products</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+          <h2 className="text-2xl sm:text-3xl font-semibold mb-6">
+            Related Products
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
             {relatedProducts.map((relProd) => (
               <Link
                 to={`/product/${relProd.slug}`}
@@ -220,8 +219,12 @@ const ProductDetail: React.FC = () => {
                   )}
                 </div>
                 <div className="mt-2 text-center">
-                  <h3 className="text-lg font-semibold">{relProd.name}</h3>
-                  <p className="text-gray-700">₹ {relProd.price.toFixed(2)}</p>
+                  <h3 className="text-sm sm:text-base font-semibold truncate">
+                    {relProd.name}
+                  </h3>
+                  <p className="text-gray-700 text-sm">
+                    ₹ {relProd.price.toFixed(2)}
+                  </p>
                 </div>
               </Link>
             ))}
