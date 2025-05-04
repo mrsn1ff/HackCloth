@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom'; // ✅ Added Link
 import API from '../../api';
 import Footer from '../../components/Footer';
-import { useCart } from '../admin/CartContext'; // ✅ Updated path to CartContext
+import { useCart } from '../admin/CartContext';
+import ReactMarkdown from 'react-markdown';
 
 interface Product {
   _id: string;
@@ -134,8 +135,8 @@ const ProductDetail: React.FC = () => {
               </div>
 
               {/* Description */}
-              <div className="mt-8 text-gray-700 leading-relaxed text-l">
-                {product.description}
+              <div className="prose prose-sm sm:prose lg:prose-lg max-w-none mt-8 text-gray-700">
+                <ReactMarkdown>{product.description}</ReactMarkdown>
               </div>
 
               {/* Quantity */}
