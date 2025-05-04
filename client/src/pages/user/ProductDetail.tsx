@@ -12,7 +12,7 @@ interface Product {
   description: string;
   images: string[];
   otherImages?: string[];
-  size: string;
+  size: string[];
   slug: string; // ✅ Needed to route to other product
 }
 
@@ -124,9 +124,10 @@ const ProductDetail: React.FC = () => {
                   value={selectedSize}
                   onChange={(e) => setSelectedSize(e.target.value)}
                 >
-                  {['S', 'M', 'L', 'XL', 'XXL', 'XXXL'].map((size) => (
-                    <option key={size} value={size}>
-                      {size}
+                  <option value="">Available Size</option>
+                  {product.size.map((sizeOption) => (
+                    <option key={sizeOption} value={sizeOption}>
+                      {sizeOption}
                     </option>
                   ))}
                 </select>

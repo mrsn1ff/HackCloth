@@ -23,7 +23,7 @@ const productSchema = new mongoose.Schema({
     required: true,
   },
   size: {
-    type: String,
+    type: [String],
     enum: ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'],
     required: true,
   },
@@ -39,7 +39,7 @@ const productSchema = new mongoose.Schema({
 });
 
 function arrayLimit(val) {
-  return val.length === 2;
+  return val.length >= 1;
 }
 
 module.exports = mongoose.model('Product', productSchema);

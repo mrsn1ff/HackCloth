@@ -22,7 +22,7 @@ router.post(
   '/',
   upload.fields([
     { name: 'images', maxCount: 2 },
-    { name: 'otherImages', maxCount: 10 }, // Allow up to 10 additional images
+    { name: 'otherImages', maxCount: 10 },
   ]),
   verifyToken,
   async (req, res) => {
@@ -35,15 +35,28 @@ router.post(
         .json({ message: 'Exactly 2 main images are required' });
     }
 
-    const { name, description, size, price, type } = req.body;
+    let { name, description, size, price, type } = req.body;
+
+    // ✅ Normalize size to always be an array
+    if (typeof size === 'string') {
+      size = [size];
+    } else if (!Array.isArray(size)) {
+      size = [];
+    }
 
     if (!['T-Shirts', 'Hoodies', 'Sweatshirts', 'Jackets'].includes(type)) {
       return res.status(400).json({ message: 'Invalid product type' });
     }
 
+    if (!size.length) {
+      return res
+        .status(400)
+        .json({ message: 'At least one size must be selected' });
+    }
+
     const validSizes = ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
-    if (!validSizes.includes(size)) {
-      return res.status(400).json({ message: 'Invalid size selected' });
+    if (!size.every((s) => validSizes.includes(s))) {
+      return res.status(400).json({ message: 'Invalid size(s) selected' });
     }
 
     const imageUrls = productImages.map(
@@ -61,7 +74,7 @@ router.post(
         name,
         slug,
         images: imageUrls,
-        otherImages: otherImageUrls, // <-- Add this field in your Product model
+        otherImages: otherImageUrls,
         description,
         size,
         price,
@@ -81,7 +94,7 @@ router.get('/', async (req, res) => {
   try {
     const { type } = req.query;
 
-    const filter = type ? { type } : {}; // 👈 filter by type if present
+    const filter = type ? { type } : {};
     const products = await Product.find(filter);
 
     res.json(products);

@@ -9,7 +9,7 @@ const AdminDashboard: React.FC = () => {
   const [otherImages, setOtherImages] = useState<FileList | null>(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [size, setSize] = useState('');
+  const [size, setSize] = useState<string[]>([]);
   const [price, setPrice] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,6 +19,15 @@ const AdminDashboard: React.FC = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/admin');
+  };
+
+  const handleSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSize((prevSize) =>
+      prevSize.includes(value)
+        ? prevSize.filter((size) => size !== value)
+        : [...prevSize, value],
+    );
   };
 
   const handleUpload = async (e: FormEvent) => {
@@ -36,7 +45,7 @@ const AdminDashboard: React.FC = () => {
 
     formData.append('name', name);
     formData.append('description', description);
-    formData.append('size', size);
+    size.forEach((s) => formData.append('size', s));
     formData.append('price', price);
     formData.append('type', type);
 
@@ -56,7 +65,7 @@ const AdminDashboard: React.FC = () => {
       setMessage('✅ Product uploaded successfully!');
       setName('');
       setDescription('');
-      setSize('');
+      setSize([]);
       setPrice('');
       setType('');
       setProductImage(null);
@@ -131,19 +140,20 @@ const AdminDashboard: React.FC = () => {
           <label className="block mb-1 font-medium text-gray-700">
             Product Size
           </label>
-          <select
-            className="w-full border px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={size}
-            onChange={(e) => setSize(e.target.value)}
-            required
-          >
-            <option value="">Select Size</option>
+          <div className="flex flex-wrap gap-3">
             {['S', 'M', 'L', 'XL', 'XXL', 'XXXL'].map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
+              <label key={s} className="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  value={s}
+                  checked={size.includes(s)}
+                  onChange={handleSizeChange}
+                  className="form-checkbox"
+                />
+                <span className="ml-2">{s}</span>
+              </label>
             ))}
-          </select>
+          </div>
         </div>
 
         <div className="col-span-1">
@@ -195,7 +205,7 @@ const AdminDashboard: React.FC = () => {
 
         <div className="col-span-full">
           <label className="block mb-1 font-medium text-gray-700">
-            Product Other Images (up to 5)
+            Product Other Images (up to 10)
           </label>
           <input
             type="file"
