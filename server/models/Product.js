@@ -14,6 +14,10 @@ const productSchema = new mongoose.Schema({
     type: [String], // array of 2 image URLs
     validate: [arrayLimit, '{PATH} must have exactly 2 images'],
   },
+  otherImages: {
+    type: [String],
+    default: [],
+  },
   description: {
     type: String,
     required: true,

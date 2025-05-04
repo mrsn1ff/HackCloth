@@ -18,46 +18,63 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // 🟢 POST route to upload product with 2 images
-router.post('/', upload.array('images', 2), verifyToken, async (req, res) => {
-  console.log(req.files); // Debugging
+router.post(
+  '/',
+  upload.fields([
+    { name: 'images', maxCount: 2 },
+    { name: 'otherImages', maxCount: 10 }, // Allow up to 10 additional images
+  ]),
+  verifyToken,
+  async (req, res) => {
+    const productImages = req.files['images'];
+    const additionalImages = req.files['otherImages'] || [];
 
-  if (!req.files || req.files.length !== 2) {
-    return res.status(400).json({ message: 'Exactly 2 images are required' });
-  }
+    if (!productImages || productImages.length !== 2) {
+      return res
+        .status(400)
+        .json({ message: 'Exactly 2 main images are required' });
+    }
 
-  const { name, description, size, price, type } = req.body;
-  if (!['T-Shirts', 'Hoodies', 'Sweatshirts', 'Jackets'].includes(type)) {
-    return res.status(400).json({ message: 'Invalid product type' });
-  }
+    const { name, description, size, price, type } = req.body;
 
-  // Validate size input
-  const validSizes = ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
-  if (!validSizes.includes(size)) {
-    return res.status(400).json({ message: 'Invalid size selected' });
-  }
+    if (!['T-Shirts', 'Hoodies', 'Sweatshirts', 'Jackets'].includes(type)) {
+      return res.status(400).json({ message: 'Invalid product type' });
+    }
 
-  const imageUrls = req.files.map(
-    (file) => `http://localhost:5000/uploads/${file.filename}`,
-  );
-  const slug = slugify(name, { lower: true, strict: true }); // Create SEO-friendly slug
+    const validSizes = ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+    if (!validSizes.includes(size)) {
+      return res.status(400).json({ message: 'Invalid size selected' });
+    }
 
-  try {
-    const product = new Product({
-      name,
-      slug, // Store slug in DB
-      images: imageUrls,
-      description,
-      size,
-      price,
-      type,
-    });
-    await product.save();
-    res.status(201).json(product);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Error saving product' });
-  }
-});
+    const imageUrls = productImages.map(
+      (file) => `http://localhost:5000/uploads/${file.filename}`,
+    );
+
+    const otherImageUrls = additionalImages.map(
+      (file) => `http://localhost:5000/uploads/${file.filename}`,
+    );
+
+    const slug = slugify(name, { lower: true, strict: true });
+
+    try {
+      const product = new Product({
+        name,
+        slug,
+        images: imageUrls,
+        otherImages: otherImageUrls, // <-- Add this field in your Product model
+        description,
+        size,
+        price,
+        type,
+      });
+      await product.save();
+      res.status(201).json(product);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Error saving product' });
+    }
+  },
+);
 
 // 🟢 GET all products (with optional type filter)
 router.get('/', async (req, res) => {

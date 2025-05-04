@@ -11,6 +11,7 @@ interface Product {
   price: number;
   description: string;
   images: string[];
+  otherImages?: string[];
   size: string;
   slug: string; // ✅ Needed to route to other product
 }
@@ -62,26 +63,31 @@ const ProductDetail: React.FC = () => {
         <div className="flex flex-wrap gap-8">
           {/* Images */}
           <div className="flex-1 min-w-[450px]">
+            {/* Main selected image */}
             <img
               src={selectedImage}
               alt="Main Product"
               className="w-full h-auto object-cover rounded-lg mb-4"
             />
-            <div className="flex gap-3">
-              {product.images.map((img, index) => (
-                <img
-                  key={index}
-                  src={img}
-                  alt={`Product ${index}`}
-                  onClick={() => setSelectedImage(img)}
-                  className={`w-20 h-20 object-cover rounded border-2 cursor-pointer transition 
-                  ${
-                    selectedImage === img
-                      ? 'border-black'
-                      : 'border-transparent hover:border-black'
-                  }`}
-                />
-              ))}
+
+            {/* Thumbnail image selector */}
+            <div className="flex gap-3 flex-wrap">
+              {[...(product.images || []), ...(product.otherImages || [])].map(
+                (img, index) => (
+                  <img
+                    key={index}
+                    src={img}
+                    alt={`Product ${index}`}
+                    onClick={() => setSelectedImage(img)}
+                    className={`w-20 h-20 object-cover rounded border-2 cursor-pointer transition
+            ${
+              selectedImage === img
+                ? 'border-black'
+                : 'border-transparent hover:border-black'
+            }`}
+                  />
+                ),
+              )}
             </div>
           </div>
 

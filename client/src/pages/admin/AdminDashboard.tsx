@@ -6,6 +6,7 @@ import API from '../../api';
 const AdminDashboard: React.FC = () => {
   const [productImage, setProductImage] = useState<File | null>(null);
   const [hoverImage, setHoverImage] = useState<File | null>(null);
+  const [otherImages, setOtherImages] = useState<FileList | null>(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [size, setSize] = useState('');
@@ -17,7 +18,7 @@ const AdminDashboard: React.FC = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    navigate('/admin/login');
+    navigate('/admin');
   };
 
   const handleUpload = async (e: FormEvent) => {
@@ -31,14 +32,24 @@ const AdminDashboard: React.FC = () => {
       return;
     }
 
-    const formData = new FormData();
+    const formData = new FormData(); // ✅ Declare first
+
     formData.append('name', name);
     formData.append('description', description);
     formData.append('size', size);
     formData.append('price', price);
+    formData.append('type', type);
+
+    // ✅ Append the 2 required main images
     formData.append('images', productImage);
     formData.append('images', hoverImage);
-    formData.append('type', type);
+
+    // ✅ Append any additional (other) images
+    if (otherImages) {
+      Array.from(otherImages).forEach((file) => {
+        formData.append('otherImages', file);
+      });
+    }
 
     try {
       await API.post('/products', formData);
@@ -47,8 +58,10 @@ const AdminDashboard: React.FC = () => {
       setDescription('');
       setSize('');
       setPrice('');
+      setType('');
       setProductImage(null);
       setHoverImage(null);
+      setOtherImages(null);
       (document.getElementById('productImage') as HTMLInputElement).value = '';
       (document.getElementById('hoverImage') as HTMLInputElement).value = '';
     } catch (err: any) {
@@ -178,6 +191,19 @@ const AdminDashboard: React.FC = () => {
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="col-span-full">
+          <label className="block mb-1 font-medium text-gray-700">
+            Product Other Images (up to 5)
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={(e) => setOtherImages(e.target.files)}
+            className="w-full"
+          />
         </div>
 
         <div className="col-span-full">
