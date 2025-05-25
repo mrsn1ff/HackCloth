@@ -13,7 +13,7 @@ interface Product {
 
 const LandingPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [showAll, setShowAll] = useState(false);
+  const [showAll, setShowAll] = useState(false);  
 
   useEffect(() => {
     API.get('/products?type=Hoodies')

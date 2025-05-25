@@ -1,11 +1,24 @@
+// src/components/Navbar.tsx
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import logo from '../assets/Hackcloth.avif';
 import { Menu, X, Search, User, ShoppingBag } from 'lucide-react';
 
 const CustomNavbar: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
   const toggleMenu = () => setMenuOpen(!menuOpen);
+
+  const handleProfileClick = () => {
+    const isAdmin = !!localStorage.getItem('token');
+    const isUser = !!localStorage.getItem('authToken');
+
+    if (isUser) {
+      navigate('/profile-page');
+    } else {
+      navigate('/profile');
+    }
+  };
 
   return (
     <>
@@ -39,9 +52,9 @@ const CustomNavbar: React.FC = () => {
             <Link to="/search">
               <Search className="w-5 h-5" />
             </Link>
-            <Link to="/profile">
+            <button onClick={handleProfileClick}>
               <User className="w-5 h-5" />
-            </Link>
+            </button>
             <Link to="/cart">
               <ShoppingBag className="w-5 h-5" />
             </Link>
@@ -73,9 +86,9 @@ const CustomNavbar: React.FC = () => {
               <Link to="/search">
                 <Search className="w-5 h-5 cursor-pointer" />
               </Link>
-              <Link to="/profile">
+              <button onClick={handleProfileClick}>
                 <User className="w-5 h-5 cursor-pointer" />
-              </Link>
+              </button>
               <Link to="/cart">
                 <ShoppingBag className="w-5 h-5 cursor-pointer" />
               </Link>
