@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../assets/Hackcloth.avif';
 import Footer from '../../components/Footer';
+import { useCart } from '../admin/CartContext';
 
 const Profile: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -11,6 +12,7 @@ const Profile: React.FC = () => {
   const [error, setError] = useState('');
   const [showCodeInput, setShowCodeInput] = useState(false);
   const navigate = useNavigate();
+  const { syncCart } = useCart();
 
   const API_BASE_URL =
     process.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
@@ -51,27 +53,73 @@ const Profile: React.FC = () => {
     setError('');
 
     try {
-      const response = await fetch(`${API_BASE_URL}/email/verify-email-code`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      // Verify the code with backend
+      const verifyResponse = await fetch(
+        `${API_BASE_URL}/email/verify-email-code`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, code }),
         },
-        body: JSON.stringify({ email, code }),
-      });
+      );
 
-      const data = await response.json();
+      const verifyData = await verifyResponse.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Verification failed');
+      if (!verifyResponse.ok) {
+        throw new Error(verifyData.message || 'Verification failed');
       }
 
-      localStorage.setItem('authToken', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      // Store authentication data
+      localStorage.setItem('authToken', verifyData.token);
+      localStorage.setItem('user', JSON.stringify(verifyData.user));
 
-      // Redirect to profile page after login
+      // Check for guest cart and merge if exists
+      const guestCart = localStorage.getItem('guestCart');
+      if (guestCart) {
+        try {
+          const items = JSON.parse(guestCart);
+          const mergePromises = items.map(
+            (item: {
+              productId: string;
+              quantity: number;
+              size: string;
+              color: string;
+            }) =>
+              fetch(`${API_BASE_URL}/user/cart`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${verifyData.token}`,
+                },
+                body: JSON.stringify({
+                  productId: item.productId,
+                  quantity: item.quantity,
+                  size: item.size,
+                  color: item.color,
+                }),
+              }),
+          );
+
+          await Promise.all(mergePromises);
+          localStorage.removeItem('guestCart');
+        } catch (mergeError) {
+          console.error('Failed to merge cart:', mergeError);
+          // Continue even if merge fails - don't block login
+        }
+      }
+
+      // Sync the cart after successful login and merge
+      await syncCart();
+
+      // Redirect to profile page
       navigate('/profile-page');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Verification failed');
+      const errorMessage =
+        err instanceof Error ? err.message : 'Verification failed';
+      setError(errorMessage);
+      console.error('Login error:', errorMessage);
     } finally {
       setLoading(false);
     }

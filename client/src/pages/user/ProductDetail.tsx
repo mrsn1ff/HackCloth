@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import API from '../../api';
 import Footer from '../../components/Footer';
@@ -16,6 +16,15 @@ interface Product {
   slug: string;
 }
 
+// Debounce function to prevent multiple rapid clicks
+const debounce = (func: (...args: any[]) => void, wait: number) => {
+  let timeout: NodeJS.Timeout;
+  return (...args: any[]) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+};
+
 const ProductDetail: React.FC = () => {
   const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();
@@ -26,6 +35,8 @@ const ProductDetail: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [clickDisabled, setClickDisabled] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -33,7 +44,7 @@ const ProductDetail: React.FC = () => {
         const res = await API.get(`/products/${slug}`);
         setProduct(res.data);
         setSelectedImage(res.data.images[0]);
-        setSelectedSize(res.data.size);
+        setSelectedSize(res.data.size[0]);
       } catch (err) {
         console.error('Error fetching product:', err);
       }
@@ -53,8 +64,47 @@ const ProductDetail: React.FC = () => {
     fetchRelated();
   }, [slug]);
 
-  if (!product)
+  // Debounced add to cart handler
+  const debouncedAddToCart = useCallback(
+    debounce(async (cartItem: any) => {
+      setIsAddingToCart(true);
+      try {
+        await addToCart(cartItem);
+        navigate('/cart');
+      } catch (error) {
+        console.error('Failed to add to cart:', error);
+        alert('Added to local cart - please login to sync across devices');
+        navigate('/cart');
+      } finally {
+        setIsAddingToCart(false);
+        setClickDisabled(false);
+      }
+    }, 1000), // 1 second debounce
+    [addToCart, navigate],
+  );
+
+  const handleAddToCart = () => {
+    if (isAddingToCart || !product || clickDisabled) return;
+    if (!selectedSize || !selectedColor) {
+      alert('Please select size and color');
+      return;
+    }
+
+    setClickDisabled(true);
+    debouncedAddToCart({
+      productId: product._id,
+      name: product.name,
+      price: product.price,
+      image: product.images[0],
+      quantity: quantity, // Fixed quantity
+      size: selectedSize,
+      color: selectedColor,
+    });
+  };
+
+  if (!product) {
     return <div className="text-center text-lg mt-10">Loading...</div>;
+  }
 
   return (
     <div>
@@ -109,6 +159,7 @@ const ProductDetail: React.FC = () => {
                   className="w-full border border-gray-300 p-2 rounded"
                   value={selectedColor}
                   onChange={(e) => setSelectedColor(e.target.value)}
+                  required
                 >
                   <option value="">Select Color</option>
                   <option value="Black">Black</option>
@@ -123,6 +174,7 @@ const ProductDetail: React.FC = () => {
                   className="w-full border border-gray-300 p-2 rounded"
                   value={selectedSize}
                   onChange={(e) => setSelectedSize(e.target.value)}
+                  required
                 >
                   <option value="">Available Size</option>
                   {product.size.map((sizeOption) => (
@@ -141,13 +193,17 @@ const ProductDetail: React.FC = () => {
                   <button
                     className="px-3 py-1 border border-gray-500 rounded"
                     onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                    disabled={isAddingToCart}
                   >
                     -
                   </button>
                   <span className="text-lg">{quantity}</span>
                   <button
                     className="px-3 py-1 border border-gray-500 rounded"
-                    onClick={() => setQuantity((prev) => prev + 1)}
+                    onClick={() =>
+                      setQuantity((prev) => Math.min(prev + 1, 100))
+                    }
+                    disabled={isAddingToCart}
                   >
                     +
                   </button>
@@ -163,29 +219,20 @@ const ProductDetail: React.FC = () => {
             {/* Actions */}
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <button
-                onClick={() => {
-                  if (!selectedSize || !selectedColor) {
-                    alert('Please select size and color');
-                    return;
-                  }
-
-                  addToCart({
-                    _id: product._id,
-                    name: product.name,
-                    price: product.price,
-                    image: product.images[0],
-                    quantity,
-                    size: selectedSize,
-                    color: selectedColor,
-                  });
-
-                  navigate('/cart');
-                }}
-                className="bg-black text-white px-5 py-2 rounded"
+                onClick={handleAddToCart}
+                disabled={isAddingToCart || clickDisabled}
+                className={`bg-black text-white px-5 py-2 rounded ${
+                  isAddingToCart || clickDisabled
+                    ? 'opacity-50 cursor-not-allowed'
+                    : ''
+                }`}
               >
-                Add to Cart
+                {isAddingToCart ? 'Adding to Cart...' : 'Add to Cart'}
               </button>
-              <button className="bg-red-600 text-white px-5 py-2 rounded">
+              <button
+                className="bg-red-600 text-white px-5 py-2 rounded"
+                disabled={isAddingToCart || clickDisabled}
+              >
                 Buy it Now
               </button>
             </div>
