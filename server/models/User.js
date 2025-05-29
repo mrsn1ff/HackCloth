@@ -1,4 +1,3 @@
-// models/User.js
 const mongoose = require('mongoose');
 
 const cartItemSchema = new mongoose.Schema(
@@ -46,6 +45,73 @@ const cartItemSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+const orderItemSchema = new mongoose.Schema({
+  productId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product',
+    required: true,
+  },
+  name: {
+    type: String,
+    required: true,
+  },
+  price: {
+    type: Number,
+    required: true,
+  },
+  image: {
+    type: String,
+    required: true,
+  },
+  quantity: {
+    type: Number,
+    required: true,
+  },
+  size: {
+    type: String,
+    required: true,
+  },
+  color: {
+    type: String,
+    required: true,
+  },
+});
+
+const orderSchema = new mongoose.Schema({
+  orderId: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  items: [orderItemSchema],
+  totalAmount: {
+    type: Number,
+    required: true,
+  },
+  shippingCharge: {
+    type: Number,
+    default: 0,
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
+    default: 'pending',
+  },
+  paymentMethod: {
+    type: String,
+    required: true,
+  },
+  paymentStatus: {
+    type: String,
+    enum: ['pending', 'completed', 'failed'],
+    default: 'pending',
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
 const userSchema = new mongoose.Schema(
   {
     email: {
@@ -56,6 +122,21 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     },
+    name: {
+      type: String,
+      trim: true,
+    },
+    phone: {
+      type: String,
+      trim: true,
+      match: /^[0-9]{10}$/,
+    },
+    address: {
+      street: { type: String, trim: true },
+      city: { type: String, trim: true },
+      state: { type: String, trim: true },
+      pincode: { type: String, trim: true },
+    },
     createdAt: {
       type: Date,
       default: Date.now,
@@ -64,6 +145,7 @@ const userSchema = new mongoose.Schema(
       type: Date,
     },
     cart: [cartItemSchema],
+    orders: [orderSchema],
   },
   { timestamps: true },
 );

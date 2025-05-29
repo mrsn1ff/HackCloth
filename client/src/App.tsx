@@ -17,6 +17,7 @@ import HoodiesPage from './pages/user/HoodiesPage';
 import Profile from './pages/user/Profile';
 import ProfilePage from './pages/user/ProfilePage';
 import Support from './pages/user/Support';
+import CheckoutPage from './pages/user/CheckoutPage';
 
 const App: React.FC = () => {
   return (
@@ -25,6 +26,7 @@ const App: React.FC = () => {
         {/* Only show CustomNavbar on non-profile pages */}
         <Routes>
           <Route path="/profile-page" element={<ProfilePage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
           <Route
             path="*"
             element={
@@ -40,6 +42,7 @@ const App: React.FC = () => {
                   <Route path="/admin" element={<AdminLoginPage />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/support" element={<Support />} />
+
                   <Route
                     path="/admin/dashboard"
                     element={
