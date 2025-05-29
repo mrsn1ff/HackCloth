@@ -36,6 +36,7 @@ const ProductDetail: React.FC = () => {
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isBuyingNow, setIsBuyingNow] = useState(false);
   const [clickDisabled, setClickDisabled] = useState(false);
 
   useEffect(() => {
@@ -66,40 +67,49 @@ const ProductDetail: React.FC = () => {
 
   // Debounced add to cart handler
   const debouncedAddToCart = useCallback(
-    debounce(async (cartItem: any) => {
-      setIsAddingToCart(true);
+    debounce(async (cartItem: any, isBuyNow: boolean = false) => {
       try {
         await addToCart(cartItem);
-        navigate('/cart');
+        navigate(isBuyNow ? '/cart' : '/cart'); // Change '/checkout' to your actual checkout route if different
       } catch (error) {
         console.error('Failed to add to cart:', error);
         alert('Added to local cart - please login to sync across devices');
-        navigate('/cart');
+        navigate(isBuyNow ? '/cart' : '/cart'); // Same as above
       } finally {
         setIsAddingToCart(false);
+        setIsBuyingNow(false);
         setClickDisabled(false);
       }
     }, 1000), // 1 second debounce
     [addToCart, navigate],
   );
 
-  const handleAddToCart = () => {
-    if (isAddingToCart || !product || clickDisabled) return;
+  const handleAddToCart = (isBuyNow: boolean = false) => {
+    if (isAddingToCart || isBuyingNow || !product || clickDisabled) return;
     if (!selectedSize || !selectedColor) {
       alert('Please select size and color');
       return;
     }
 
     setClickDisabled(true);
-    debouncedAddToCart({
-      productId: product._id,
-      name: product.name,
-      price: product.price,
-      image: product.images[0],
-      quantity: quantity, // Fixed quantity
-      size: selectedSize,
-      color: selectedColor,
-    });
+    if (isBuyNow) {
+      setIsBuyingNow(true);
+    } else {
+      setIsAddingToCart(true);
+    }
+
+    debouncedAddToCart(
+      {
+        productId: product._id,
+        name: product.name,
+        price: product.price,
+        image: product.images[0],
+        quantity: quantity,
+        size: selectedSize,
+        color: selectedColor,
+      },
+      isBuyNow,
+    );
   };
 
   if (!product) {
@@ -193,7 +203,7 @@ const ProductDetail: React.FC = () => {
                   <button
                     className="px-3 py-1 border border-gray-500 rounded"
                     onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-                    disabled={isAddingToCart}
+                    disabled={isAddingToCart || isBuyingNow}
                   >
                     -
                   </button>
@@ -203,7 +213,7 @@ const ProductDetail: React.FC = () => {
                     onClick={() =>
                       setQuantity((prev) => Math.min(prev + 1, 100))
                     }
-                    disabled={isAddingToCart}
+                    disabled={isAddingToCart || isBuyingNow}
                   >
                     +
                   </button>
@@ -219,10 +229,10 @@ const ProductDetail: React.FC = () => {
             {/* Actions */}
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <button
-                onClick={handleAddToCart}
-                disabled={isAddingToCart || clickDisabled}
+                onClick={() => handleAddToCart(false)}
+                disabled={isAddingToCart || isBuyingNow || clickDisabled}
                 className={`bg-black text-white px-5 py-2 rounded ${
-                  isAddingToCart || clickDisabled
+                  isAddingToCart || isBuyingNow || clickDisabled
                     ? 'opacity-50 cursor-not-allowed'
                     : ''
                 }`}
@@ -230,10 +240,15 @@ const ProductDetail: React.FC = () => {
                 {isAddingToCart ? 'Adding to Cart...' : 'Add to Cart'}
               </button>
               <button
-                className="bg-red-600 text-white px-5 py-2 rounded"
-                disabled={isAddingToCart || clickDisabled}
+                onClick={() => handleAddToCart(true)}
+                disabled={isAddingToCart || isBuyingNow || clickDisabled}
+                className={`bg-red-600 text-white px-5 py-2 rounded ${
+                  isAddingToCart || isBuyingNow || clickDisabled
+                    ? 'opacity-50 cursor-not-allowed'
+                    : ''
+                }`}
               >
-                Buy it Now
+                {isBuyingNow ? 'Buying...' : 'Buy it Now'}
               </button>
             </div>
           </div>

@@ -16,6 +16,7 @@ import JacketsPage from './pages/user/JacketsPage';
 import HoodiesPage from './pages/user/HoodiesPage';
 import Profile from './pages/user/Profile';
 import ProfilePage from './pages/user/ProfilePage';
+import Support from './pages/user/Support';
 
 const App: React.FC = () => {
   return (
@@ -38,6 +39,7 @@ const App: React.FC = () => {
                   <Route path="/hoodies" element={<HoodiesPage />} />
                   <Route path="/admin" element={<AdminLoginPage />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/support" element={<Support />} />
                   <Route
                     path="/admin/dashboard"
                     element={

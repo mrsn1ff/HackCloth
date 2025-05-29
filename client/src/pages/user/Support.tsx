@@ -1,80 +1,49 @@
-// LandingPage.tsx
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import API from '../../api';
+import React from 'react';
 import Footer from '../../components/Footer';
 
-interface Product {
-  _id: string;
-  name: string;
-  price: number;
-  slug: string;
-  images: string[];
-}
-
-const LandingPage: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [showAll, setShowAll] = useState(false); // ✅ New state to toggle full view
-
-  useEffect(() => {
-    API.get('/products?type=Hoodies')
-      .then((res) => setProducts(res.data))
-      .catch((err) => console.error(err));
-  }, []);
-
-  // ✅ Limit to 8 if not showing all
-  const displayedProducts = showAll ? products : products.slice(0, 8);
-
+const Support: React.FC = () => {
   return (
     <div className="w-full">
-      {/* Products Grid */}
-      <section className="max-w-screen-xl mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center mb-12">
-          Limited Stocks — Exclusive Designs
+      <section className="max-w-3xl mx-auto px-6 py-20 text-left leading-relaxed font-light">
+        <h2 className="text-4xl font-semibold mb-8 tracking-tight text-black">
+          Get in Touch - Contact Us
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
-          {displayedProducts.map((product) => (
-            <div key={product._id} className="text-center group">
-              <Link to={`/product/${product.slug}`} className="block">
-                <div className="relative aspect-square overflow-hidden rounded-lg shadow-md">
-                  <img
-                    src={product.images?.[0]}
-                    alt={product.name}
-                    className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-0"
-                  />
-                  {product.images?.[1] && (
-                    <img
-                      src={product.images[1]}
-                      alt={`${product.name} Hover`}
-                      className="w-full h-full object-cover absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    />
-                  )}
-                </div>
-                <div className="mt-4">
-                  <h3 className="text-lg font-semibold">{product.name}</h3>
-                  <p className="text-gray-700">₹ {product.price.toFixed(2)}</p>
-                </div>
-              </Link>
-            </div>
-          ))}
-        </div>
+        <p className="text-gray-700 mb-5">
+          You can reach out to us on{' '}
+          <a href="mailto:support@hackcloth.in" className="text-600 underline">
+            support@hackcloth.in
+          </a>
+          , we are almost always online, and will respond as soon as we can.
+        </p>
 
-        {/* ✅ "See More" Button */}
-        {!showAll && products.length > 8 && (
-          <div className="text-center mt-10">
-            <button
-              onClick={() => setShowAll(true)}
-              className="px-6 py-3 bg-black text-white rounded-full hover:bg-gray-800 transition"
-            >
-              See More
-            </button>
-          </div>
-        )}
+        <p className="text-gray-700 mb-5">
+          If you're here, it probably means you're either a fan of our hacking
+          clothing brand, or you're trying to hack into our website. Either way,
+          we're happy you're here!
+        </p>
+
+        <p className="text-gray-700 mb-5">
+          If you have a question about our products, want to chat about the
+          latest hacking trends, or just want to say hello, please feel free to
+          drop us a line. We promise not to hack your email (unless you ask us
+          to, of course).
+        </p>
+
+        <p className="italic text-gray-700 mb-5">
+          And finally, if you're a hacker trying to infiltrate our system,{' '}
+          <strong>please don't</strong>.
+        </p>
+
+        <p className="text-gray-700">
+          Thanks for visiting our website, and we look forward to hearing from
+          you (especially if you're not a hacker).
+        </p>
       </section>
+
       <Footer />
     </div>
   );
 };
 
-export default LandingPage;
+export default Support;
