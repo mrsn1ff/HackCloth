@@ -1,33 +1,14 @@
 const nodemailer = require('nodemailer');
 
-// Configure transporter based on environment
-const transporter = nodemailer.createTransport(
-  process.env.EMAIL_SERVICE === 'SendGrid'
-    ? {
-        service: 'SendGrid',
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      }
-    : process.env.EMAIL_SERVICE === 'gmail'
-    ? {
-        service: 'gmail',
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      }
-    : {
-        host: process.env.EMAIL_HOST,
-        port: process.env.EMAIL_PORT,
-        secure: false, // true for 465, false for other ports
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      },
-);
+// Simplified transporter configuration for Mailtrap
+const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_HOST,
+  port: process.env.EMAIL_PORT,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 const sendLoginCode = async (email, code) => {
   try {
@@ -46,9 +27,18 @@ const sendLoginCode = async (email, code) => {
         </div>
       `,
     });
-    console.log('Email sent successfully');
+    console.log('Email sent successfully to', email);
   } catch (error) {
-    console.error('Email sending failed:', error);
+    console.error('Email sending failed:', {
+      message: error.message,
+      stack: error.stack,
+      email: email,
+      config: {
+        host: process.env.EMAIL_HOST,
+        user: process.env.EMAIL_USER,
+        usingMailtrap: process.env.EMAIL_HOST.includes('mailtrap'),
+      },
+    });
     throw error;
   }
 };

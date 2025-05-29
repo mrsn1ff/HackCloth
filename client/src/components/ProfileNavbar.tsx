@@ -53,8 +53,8 @@ const ProfileNavbar: React.FC<ProfileNavbarProps> = ({
           <div className="hidden md:flex justify-between items-center w-full">
             <ul className="flex space-x-8 text-sm font-mono ml-8">
               {[
-                'Home',
-                'T-Shirts',
+                '/',
+                'TShirts',
                 'Hoodies',
                 'Sweatshirts',
                 'Jackets',

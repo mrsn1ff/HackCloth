@@ -38,7 +38,7 @@ router.post('/send-login-code', async (req, res) => {
       });
     }
 
-    // Delete old codes
+    console.log('Deleting old codes for:', email);
     await EmailCode.deleteMany({ email });
 
     const code = generateCode();
@@ -46,18 +46,28 @@ router.post('/send-login-code', async (req, res) => {
       Date.now() + process.env.CODE_EXPIRATION_MINUTES * 60 * 1000,
     );
 
+    console.log('Creating new code for:', email);
     await EmailCode.create({ email, code, expiresAt });
+
+    console.log('Attempting to send email to:', email);
     await sendLoginCode(email, code);
+    console.log('Email sent successfully to:', email);
 
     res.json({
       success: true,
       message: 'Code sent successfully',
     });
   } catch (error) {
-    console.error('Send code error:', error);
+    console.error('Send code error details:', {
+      message: error.message,
+      stack: error.stack,
+      email: req.body.email,
+      timestamp: new Date().toISOString(),
+    });
     res.status(500).json({
       success: false,
       message: 'Failed to send code. Please try again.',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }
 });
